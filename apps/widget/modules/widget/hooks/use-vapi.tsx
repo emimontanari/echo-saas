@@ -15,7 +15,7 @@ export const useVapi = () => {
 
   useEffect(() => {
     //Only for testing
-    const vapiInstance = new Vapi("f6c9a568-74d3-4e6c-81e0-03de485ddeee");
+    const vapiInstance = new Vapi("");
     setVapi(vapiInstance);
 
     vapiInstance.on("call-start", () => {
@@ -62,7 +62,7 @@ export const useVapi = () => {
   const startCall = () => {
     setIsConnecting(true);
     if (vapi) {
-      vapi.start("521cf1b5-4326-4765-9d58-53803d0b8862");
+      vapi.start("");
     }
   };
 
