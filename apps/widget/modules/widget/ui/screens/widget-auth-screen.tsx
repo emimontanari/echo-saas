@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "convex/react";
 import { api } from "@workspace/backend/_generated/api";
 import { Doc } from "@workspace/backend/_generated/dataModel";
+import { WidgetFooter } from "../components/widget-footer";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -121,6 +122,7 @@ export const WidgetAuthScreen = () => {
           </Button>
         </form>
       </Form>
+      <WidgetFooter />
     </>
   );
 };
