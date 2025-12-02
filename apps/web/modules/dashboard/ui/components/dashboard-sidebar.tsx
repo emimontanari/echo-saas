@@ -110,7 +110,6 @@ export const DashboardSidebar = ({}: DashboardSidebarProps) => {
         {/* customer support */}
         <SidebarGroup>
           <SidebarGroupLabel>Customer Support</SidebarGroupLabel>
-
           <SidebarGroupContent>
             <SidebarMenu>
               {customerSupportItems.map((item) => (
@@ -118,6 +117,10 @@ export const DashboardSidebar = ({}: DashboardSidebarProps) => {
                   <SidebarMenuButton
                     tooltip={item.title}
                     isActive={isActive(item.url)}
+                    className={cn(
+                      isActive(item.url) &&
+                        "bg-gradient-to-b from-sidebar-primary to-[#0b63f3]! text-sidebar-primary-foreground! hover:to-[#0b63f3]/90!"
+                    )}
                     asChild
                   >
                     <Link href={item.url}>
@@ -143,6 +146,10 @@ export const DashboardSidebar = ({}: DashboardSidebarProps) => {
                     tooltip={item.title}
                     isActive={isActive(item.url)}
                     asChild
+                    className={cn(
+                      isActive(item.url) &&
+                        "bg-gradient-to-b from-sidebar-primary to-[#0b63f3]! text-sidebar-primary-foreground! hover:to-[#0b63f3]/90!"
+                    )}
                   >
                     <Link href={item.url}>
                       <item.icon className="size-4" />
@@ -167,6 +174,10 @@ export const DashboardSidebar = ({}: DashboardSidebarProps) => {
                     tooltip={item.title}
                     isActive={isActive(item.url)}
                     asChild
+                                        className={cn(
+                      isActive(item.url) &&
+                        "bg-gradient-to-b from-sidebar-primary to-[#0b63f3]! text-sidebar-primary-foreground! hover:to-[#0b63f3]/90!"
+                    )}
                   >
                     <Link href={item.url}>
                       <item.icon className="size-4" />
