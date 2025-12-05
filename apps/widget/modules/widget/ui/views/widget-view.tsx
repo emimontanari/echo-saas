@@ -2,21 +2,23 @@
 import { useAtomValue } from "jotai";
 import { WidgetFooter } from "@/modules/widget/ui/components/widget-footer";
 import { WidgetAuthScreen } from "@/modules/widget/ui/screens/widget-auth-screen";
-import { scrrenAtom } from "@/modules/widget/atoms/widget-atoms";
+import { screenAtom } from "@/modules/widget/atoms/widget-atoms";
+import WidgetErrorScreen from "@/modules/widget/ui/screens/widget-error-screen";
+import WidgetLoadingScreen from "../screens/widget-loading-screen";
 
 interface Props {
-  organizationId: string;
+  organizationId: string | null;
 }
 
 export const WidgetView = ({ organizationId }: Props) => {
-  const screen = useAtomValue(scrrenAtom);
+  const screen = useAtomValue(screenAtom);
 
   const screenComponent = {
-    error: <p>TODO: Error</p>,
-    loading: <p>TODO: Loading</p>,
+    error: <WidgetErrorScreen />,
+    loading: <WidgetLoadingScreen organizationId={organizationId} />,
+    auth: <WidgetAuthScreen />,
     selection: <p>TODO: Selection</p>,
     voice: <p>TODO: Voice</p>,
-    auth: <WidgetAuthScreen />,
     inbox: <p>TODO: Inbox</p>,
     chat: <p>TODO: Chat</p>,
     contact: <p>TODO: Contact</p>,
