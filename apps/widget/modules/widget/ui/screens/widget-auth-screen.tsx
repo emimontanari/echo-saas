@@ -15,6 +15,11 @@ import { useMutation } from "convex/react";
 import { api } from "@workspace/backend/_generated/api";
 import { Doc } from "@workspace/backend/_generated/dataModel";
 import { WidgetFooter } from "../components/widget-footer";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import {
+  contactSessionIdAtomFamily,
+  organizationIdAtom,
+} from "../../atoms/widget-atoms";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -22,6 +27,10 @@ const formSchema = z.object({
 });
 
 export const WidgetAuthScreen = () => {
+  const organizationId = useAtomValue(organizationIdAtom);
+  const setContactSessionId = useSetAtom(
+    contactSessionIdAtomFamily(organizationId || "")
+  );
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -29,7 +38,7 @@ export const WidgetAuthScreen = () => {
       email: "",
     },
   });
-  const organizationId = "123";
+
   const createContactSession = useMutation(api.public.contactSessions.create);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -59,7 +68,7 @@ export const WidgetAuthScreen = () => {
       expiresAt,
       metadata,
     });
-    console.log(contactSessionsId);
+    setContactSessionId(contactSessionsId);
   };
 
   return (
