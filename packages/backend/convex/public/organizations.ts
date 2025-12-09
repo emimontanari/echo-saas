@@ -1,25 +1,24 @@
-import { v } from "convex/values";
-import { action } from "../_generated/server";
-import { createClerkClient } from "@clerk/backend"
+import { v } from 'convex/values';
+import { createClerkClient } from '@clerk/backend';
+import { action } from '../_generated/server';
 
-
-const clerkClient = createClerkClient({
-    secretKey: process.env.CLERK_SECRET_KEY || "",
-})
+const clerk = createClerkClient({
+    secretKey: process.env.CLERK_SECRET_KEY!
+});
 
 export const validate = action({
     args: {
-        organizationId: v.string(),
+        id: v.string()
     },
     handler: async (_, args) => {
-        try {
-            await clerkClient.organizations.getOrganization({
-                organizationId: args.organizationId,
-            })
+        const org = await clerk.organizations.getOrganization({
+            organizationId: args.id
+        });
 
-            return { valid: true }
-        } catch {
-            return { valid: false, reason: "Organization not found" }
+        if (!org) {
+            return { valid: false, message: 'BACKEND_ERROR: Organization not found' };
         }
-    },
+
+        return { valid: true };
+    }
 });

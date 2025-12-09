@@ -15,11 +15,8 @@ import { useMutation } from "convex/react";
 import { api } from "@workspace/backend/_generated/api";
 import { Doc } from "@workspace/backend/_generated/dataModel";
 import { WidgetFooter } from "../components/widget-footer";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import {
-  contactSessionIdAtomFamily,
-  organizationIdAtom,
-} from "../../atoms/widget-atoms";
+import { useScreenOrgId } from "@/modules/widget/store/use-screen-store";
+import { useContactSessionActions } from "@/modules/widget/store/use-contact-session-store";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -27,10 +24,8 @@ const formSchema = z.object({
 });
 
 export const WidgetAuthScreen = () => {
-  const organizationId = useAtomValue(organizationIdAtom);
-  const setContactSessionId = useSetAtom(
-    contactSessionIdAtomFamily(organizationId || "")
-  );
+  const organizationId = useScreenOrgId();
+  const { setContactSessionId } = useContactSessionActions();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,11 +42,19 @@ export const WidgetAuthScreen = () => {
     const metadata: Doc<"contactSessions">["metadata"] = {
       userAgent: navigator.userAgent,
       language: navigator.language,
-      languages: navigator.languages?.join(","),
+      languages: navigator.languages
+        ? Array.from(navigator.languages)
+        : undefined,
       platform: navigator.platform,
       vendor: navigator.vendor,
-      screenResolution: `${screen.width}x${screen.height}`,
-      viewportSize: `${window.innerWidth}x${window.innerHeight}`,
+      screenResolution: {
+        width: screen.width,
+        height: screen.height,
+      },
+      viewportSize: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+      },
       timezoneOffset: new Date().getTimezoneOffset(),
       cookieEnabled: navigator.cookieEnabled,
       referrer: document.referrer || "direct",
@@ -60,26 +63,24 @@ export const WidgetAuthScreen = () => {
     console.log(metadata);
 
     const SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
-    const expiresAt = Date.now() + SESSION_DURATION_MS;
 
     const contactSessionsId = await createContactSession({
       ...values,
-      organizationId,
-      expiresAt,
+      orgId: organizationId,
+
       metadata,
     });
-    setContactSessionId(contactSessionsId);
+
+    setContactSessionId(contactSessionsId.id);
   };
 
   return (
     <>
       <WidgetHeader>
-        <WidgetHeader>
-          <div className="flex flex-col justify-between gap-y-2 px-2 py-6">
-            <p className="font-semibold text-3xl">Hi There!👋🏻 </p>
-            <p className="text-lg">Let&apos;s get you started</p>
-          </div>
-        </WidgetHeader>
+        <div className="flex flex-col justify-between gap-y-2 px-2 py-6">
+          <p className="font-semibold text-3xl">Hi There!👋🏻 </p>
+          <p className="text-lg">Let&apos;s get you started</p>
+        </div>
       </WidgetHeader>
 
       <Form {...form}>
