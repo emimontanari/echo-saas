@@ -1,11 +1,10 @@
 "use client";
-import { useAtomValue } from "jotai";
 import { AlertTriangleIcon } from "lucide-react";
-import { errorMessageAtom } from "@/modules/widget/atoms/widget-atoms";
+import { useScreenError } from "@/modules/widget/store/use-screen-store";
 import { WidgetHeader } from "@/modules/widget/ui/components/widget-header";
 
 const WidgetErrorScreen = () => {
-  const errorMessage = useAtomValue(errorMessageAtom);
+  const errorMessage = useScreenError();
 
   return (
     <>

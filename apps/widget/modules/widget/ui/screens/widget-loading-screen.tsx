@@ -1,18 +1,12 @@
 "use client";
-import { useAtomValue, useSetAtom } from "jotai";
 import { LoaderIcon } from "lucide-react";
-import {
-  contactSessionIdAtomFamily,
-  errorMessageAtom,
-  loadingMessageAtom,
-  organizationIdAtom,
-  screenAtom,
-} from "@/modules/widget/atoms/widget-atoms";
 import { WidgetHeader } from "@/modules/widget/ui/components/widget-header";
 import { useEffect, useState } from "react";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@workspace/backend/_generated/api";
 import { Id } from "@workspace/backend/_generated/dataModel";
+import { useScreenActions, useScreenLoadingMessage } from "@/modules/widget/store/use-screen-store";
+import { useContactSessionId } from "@/modules/widget/store/use-contact-session-store";
 
 type InitStep = "org" | "session" | "settings" | "vapi" | "done";
 
@@ -23,14 +17,9 @@ const WidgetLoadingScreen = ({
 }) => {
   const [step, setStep] = useState<InitStep>("org");
   const [sessionValid, setSessionValid] = useState(false);
-  const setOrganizationId = useSetAtom(organizationIdAtom);
-  const loadingMessage = useAtomValue(loadingMessageAtom);
-  const SetErrorMessage = useSetAtom(errorMessageAtom);
-  const setScreen = useSetAtom(screenAtom);
-  const setLoadingMessage = useSetAtom(loadingMessageAtom);
-  const contactSessionId = useAtomValue(
-    contactSessionIdAtomFamily(organizationId || "")
-  );
+  const { setScreen, setError, setLoadingMessage, setOrgId } = useScreenActions();
+  const loadingMessage = useScreenLoadingMessage();
+  const contactSessionId = useContactSessionId();
 
   const validateOrganization = useAction(api.public.organizations.validate);
 
@@ -39,33 +28,33 @@ const WidgetLoadingScreen = ({
 
     setLoadingMessage("Validating organization ID...");
     if (!organizationId) {
-      SetErrorMessage("Organization ID is required");
+      setError("Organization ID is required");
       setScreen("error");
       return;
     }
 
     setLoadingMessage("Finding organization ID...");
 
-    validateOrganization({ organizationId })
+    validateOrganization({ id: organizationId })
       .then((result) => {
         if (result.valid) {
-          setOrganizationId(organizationId);
+          setOrgId(organizationId);
           setStep("session");
         } else {
-          SetErrorMessage(result.reason || "Organization not found");
+          setError(result.message || "Organization not found");
           setScreen("error");
         }
       })
       .catch(() => {
-        SetErrorMessage("Unable to validate organization");
+        setError("Unable to validate organization");
         setScreen("error");
       });
   }, [
     step,
     organizationId,
-    SetErrorMessage,
+    setError,
     setScreen,
-    setOrganizationId,
+    setOrgId,
     setStep,
     validateOrganization,
     setLoadingMessage,
@@ -88,7 +77,7 @@ const WidgetLoadingScreen = ({
     setLoadingMessage("Validating session...");
 
     validateContactSession({
-      contactSessionId,
+      id: contactSessionId,
     })
       .then((result) => {
         setSessionValid(result.valid);
