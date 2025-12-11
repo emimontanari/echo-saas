@@ -1,6 +1,6 @@
 import { v } from 'convex/values';
 import { createClerkClient } from '@clerk/backend';
-import { action } from '../_generated/server';
+import { action } from '../_generated/server.js';
 
 const clerk = createClerkClient({
     secretKey: process.env.CLERK_SECRET_KEY!

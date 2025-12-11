@@ -1,31 +1,40 @@
-import { WidgetHeader } from "@/modules/widget/ui/components/widget-header";
+"use client";
+
+import { useState } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { useMutation } from "convex/react";
+import { api } from "@workspace/backend/_generated/api";
+import { Doc } from "@workspace/backend/_generated/dataModel";
+import { Button } from "@workspace/ui/components/button";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@workspace/ui/components/form";
-import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "convex/react";
-import { api } from "@workspace/backend/_generated/api";
-import { Doc } from "@workspace/backend/_generated/dataModel";
-import { WidgetFooter } from "../components/widget-footer";
-import { useScreenOrgId } from "@/modules/widget/store/use-screen-store";
+import { Loader2Icon } from "lucide-react";
 import { useContactSessionActions } from "@/modules/widget/store/use-contact-session-store";
+import { useScreenOrgId } from "@/modules/widget/store/use-screen-store";
+import { WidgetHeader } from "@/modules/widget/ui/components/widget-header";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email address"),
+  email: z.string().email("Invalid email"),
 });
 
 export const WidgetAuthScreen = () => {
-  const organizationId = useScreenOrgId();
+  const orgId = useScreenOrgId();
   const { setContactSessionId } = useContactSessionActions();
+
+  const createContactSession = useMutation(api.public.contactSessions.create);
+  const [isPendingCreateContactSession, setIsPendingCreateContactSession] =
+    useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,71 +43,77 @@ export const WidgetAuthScreen = () => {
     },
   });
 
-  const createContactSession = useMutation(api.public.contactSessions.create);
-
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!organizationId) return;
+    if (!orgId) {
+      // toast.error("Org ID is required");
+      return;
+    }
 
-    const metadata: Doc<"contactSessions">["metadata"] = {
-      userAgent: navigator.userAgent,
-      language: navigator.language,
-      languages: navigator.languages
-        ? Array.from(navigator.languages)
-        : undefined,
-      platform: navigator.platform,
-      vendor: navigator.vendor,
-      screenResolution: {
-        width: screen.width,
-        height: screen.height,
-      },
-      viewportSize: {
-        width: window.innerWidth,
-        height: window.innerHeight,
-      },
-      timezoneOffset: new Date().getTimezoneOffset(),
-      cookieEnabled: navigator.cookieEnabled,
-      referrer: document.referrer || "direct",
-      currentUrl: window.location.href,
-    };
-    console.log(metadata);
+    setIsPendingCreateContactSession(true);
 
-    const SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+    try {
+      const metadata: Doc<"contactSessions">["metadata"] = {
+        userAgent: navigator.userAgent,
+        language: navigator.language,
+        languages: navigator.languages as string[],
+        platform: navigator.platform,
+        vendor: navigator.vendor,
+        screenResolution: {
+          width: window.screen.width,
+          height: window.screen.height,
+        },
+        viewportSize: {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        },
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezoneOffset: new Date().getTimezoneOffset(),
+        cookieEnabled: navigator.cookieEnabled,
+        referrer: document.referrer || "",
+        currentUrl: window.location.href,
+      };
 
-    const contactSessionsId = await createContactSession({
-      ...values,
-      orgId: organizationId,
+      const result = await createContactSession({
+        ...values,
+        orgId,
+        metadata,
+      });
 
-      metadata,
-    });
-
-    setContactSessionId(contactSessionsId.id);
+      // toast.success(`Contact session created: ${result.id}`);
+      setContactSessionId(result.id);
+    } catch (error) {
+      // toast.error("Failed to create contact session");
+      console.error("Error creating contact session:", error);
+    } finally {
+      setIsPendingCreateContactSession(false);
+    }
   };
 
   return (
     <>
       <WidgetHeader>
         <div className="flex flex-col justify-between gap-y-2 px-2 py-6">
-          <p className="font-semibold text-3xl">Hi There!👋🏻 </p>
-          <p className="text-lg">Let&apos;s get you started</p>
+          <p className="text-3xl">Hi there! 👋</p>
+          <p className="text-lg">Let's get you started</p>
         </div>
       </WidgetHeader>
-
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-1 flex-col gap-y-6 p-4"
+          className="flex flex-1 flex-col gap-y-4 p-4"
         >
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Name</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="e.g. John Doe"
-                    required
-                    className="h-10 bg-background"
+                    className="bg-background h-10"
+                    placeholder="Enter your name"
+                    type="text"
                   />
                 </FormControl>
                 <FormMessage />
@@ -110,12 +125,12 @@ export const WidgetAuthScreen = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="e.g. john@doe.com"
-                    required
-                    className="h-10 bg-background"
+                    className="bg-background h-10"
+                    placeholder="Enter your email"
                     type="email"
                   />
                 </FormControl>
@@ -124,15 +139,21 @@ export const WidgetAuthScreen = () => {
             )}
           />
           <Button
-            disabled={form.formState.isSubmitting}
-            size={"lg"}
             type="submit"
+            className="w-full"
+            disabled={isPendingCreateContactSession}
           >
-            Continue
+            {isPendingCreateContactSession ? (
+              <>
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Continue"
+            )}
           </Button>
         </form>
       </Form>
-      <WidgetFooter />
     </>
   );
 };
