@@ -1,17 +1,19 @@
 import { WidgetHeader } from "@/modules/widget/ui/components/widget-header";
 import z from "zod";
-import { ArrowLeftIcon, MenuIcon, MessageSquareTextIcon } from "lucide-react";
+import { ArrowLeftIcon, MenuIcon } from "lucide-react";
 import { useThreadMessages, toUIMessages } from "@convex-dev/agent/react";
 import {
   useConversationActions,
   useConversationId,
 } from "@/modules/widget/store/use-conversation-store";
+import { useInfiniteScroll } from "@workspace/ui/hooks/use-infinite-scroll";
+import { InfiniteScrollTrigger } from "@workspace/ui/components/infinite-scroll-trigger";
+import { DicebearAvatar } from "@workspace/ui/components/dicebear-avatar";
 import { useContactSessionId } from "../../store/use-contact-session-store";
 import { useScreenActions } from "../../store/use-screen-store";
 import {
   AIConversation,
   AIConversationContent,
-  AIConversationScrollButton,
 } from "@workspace/ui/components/ai/conversation";
 import {
   AIInput,
@@ -56,7 +58,7 @@ export const WidgetChatScreen = () => {
           id: conversationId,
           contactSessionId,
         }
-      : "skip"
+      : "skip",
   );
   const [isPendingCreateMessage, setIsPendingCreateMessage] = useState(false);
 
@@ -68,7 +70,7 @@ export const WidgetChatScreen = () => {
           contactSessionId,
         }
       : "skip",
-    { initialNumItems: 10 }
+    { initialNumItems: 10 },
   );
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -77,6 +79,13 @@ export const WidgetChatScreen = () => {
       message: "",
     },
   });
+
+  const { topElementRef, hadleLoadMore, canLoadMore, isLoadingMore } =
+    useInfiniteScroll({
+      status: messages.status,
+      loadMore: messages.loadMore,
+      loadSize: 10,
+    });
 
   const createMessage = useAction(api.public.messages.create);
 
@@ -120,6 +129,12 @@ export const WidgetChatScreen = () => {
       </WidgetHeader>
       <AIConversation>
         <AIConversationContent>
+          <InfiniteScrollTrigger
+            canLoadMore={canLoadMore}
+            isLoadingMore={isLoadingMore}
+            onLoadMore={hadleLoadMore}
+            ref={topElementRef}
+          />
           {toUIMessages(messages.results ?? [])?.map((message) => {
             return (
               <AIMessage
@@ -129,6 +144,13 @@ export const WidgetChatScreen = () => {
                 <AIMessageContent>
                   <AIResponse>{message.content}</AIResponse>
                 </AIMessageContent>
+                {message.role === "assistant" && (
+                  <DicebearAvatar
+                    seed="assistant"
+                    size={32}
+                    imageUrl="/logo.svg"
+                  />
+                )}
               </AIMessage>
             );
           })}
