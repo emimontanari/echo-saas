@@ -1,30 +1,35 @@
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 import { HomeIcon, InboxIcon } from "lucide-react";
+import { useScreen, useScreenActions } from "../../store/use-screen-store";
+import { set } from "react-hook-form";
+import { WIDGET_SCREENS } from "../../types";
 
 export const WidgetFooter = () => {
-  const screen = "selection";
-  const inbox = "inbox";
+  const screen = useScreen();
+  const { setScreen } = useScreenActions();
+
   return (
-    <footer className="flex items-center justify-between border-t bg-background">
+    <footer className="bg-background flex items-center justify-between border-t">
       <Button
         className="h-14 flex-1 rounded-none"
-        onClick={() => {}}
-        size={"icon"}
-        variant={"ghost"}
+        onClick={() => setScreen(WIDGET_SCREENS.SELECTION)}
+        size="icon"
+        variant="ghost"
       >
         <HomeIcon
-          className={cn("size-4", screen === "selection" && "text-primary")}
+          className={cn("size-5", screen === "selection" && "text-primary")}
         />
       </Button>
+
       <Button
         className="h-14 flex-1 rounded-none"
-        onClick={() => {}}
-        size={"icon"}
-        variant={"ghost"}
+        onClick={() => setScreen(WIDGET_SCREENS.INBOX)}
+        size="icon"
+        variant="ghost"
       >
         <InboxIcon
-          className={cn("size-4", inbox === "inbox" && "text-primary")}
+          className={cn("size-5", screen === "inbox" && "text-primary")}
         />
       </Button>
     </footer>
