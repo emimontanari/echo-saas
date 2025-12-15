@@ -16,6 +16,7 @@ import {
 import { WidgetHeader } from "@/modules/widget/ui/components/widget-header";
 import { WIDGET_SCREENS } from "../../types";
 import { useContactSessionId } from "@/modules/widget/store/use-contact-session-store";
+import { WidgetFooter } from "../components/widget-footer";
 
 export const WidgetSelectionScreen = () => {
   const { setScreen, setError } = useScreenActions();
@@ -90,6 +91,7 @@ export const WidgetSelectionScreen = () => {
           )}
         </Button>
       </div>
+      <WidgetFooter />
     </>
   );
 };

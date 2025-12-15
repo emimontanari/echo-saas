@@ -101,7 +101,7 @@ export const WidgetAuthScreen = () => {
     <>
       <WidgetHeader>
         <div className="flex flex-col justify-between gap-y-2 px-2 py-6">
-          <p className="text-3xl">Hi there! 👋</p>
+          <p className="text-3xl">Hi there!</p>
           <p className="text-lg">Let's get you started</p>
         </div>
       </WidgetHeader>
