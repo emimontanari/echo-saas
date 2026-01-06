@@ -58,7 +58,7 @@ export const WidgetChatScreen = () => {
           id: conversationId,
           contactSessionId,
         }
-      : "skip",
+      : "skip"
   );
   const [isPendingCreateMessage, setIsPendingCreateMessage] = useState(false);
 
@@ -70,7 +70,7 @@ export const WidgetChatScreen = () => {
           contactSessionId,
         }
       : "skip",
-    { initialNumItems: 10 },
+    { initialNumItems: 10 }
   );
 
   const form = useForm<z.infer<typeof formSchema>>({
