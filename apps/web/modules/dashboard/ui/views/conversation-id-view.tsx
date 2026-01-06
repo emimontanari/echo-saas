@@ -25,7 +25,11 @@ import {
 import { AIResponse } from "@workspace/ui/components/ai/response";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toUIMessages, useThreadMessages } from "@convex-dev/agent/react";
+import {
+  toUIMessages,
+  type UIMessage,
+  useThreadMessages,
+} from "@convex-dev/agent/react";
 import { DicebearAvatar } from "@workspace/ui/components/dicebear-avatar";
 import { useForm } from "react-hook-form";
 import { Form, FormField } from "@workspace/ui/components/form";
@@ -56,7 +60,7 @@ export const ConversationIdView = ({
           threadId: conversation.threadId,
         }
       : "skip",
-    { initialNumItems: 10 }
+    { initialNumItems: 10 },
   );
 
   const createMessage = useMutation(api.private.messages.create);
@@ -83,7 +87,7 @@ export const ConversationIdView = ({
 
       <AIConversation className="max-h-[calc(100vh-180px)]">
         <AIConversationContent>
-          {toUIMessages(messages.results ?? [])?.map((message: any) => (
+          {toUIMessages(messages.results ?? [])?.map((message: UIMessage) => (
             <AIMessage
               key={message.id}
               // reverse the role, we are assistant, user is the user
